@@ -145,6 +145,7 @@ return [
         CodeProject\Providers\AuthServiceProvider::class,
         CodeProject\Providers\EventServiceProvider::class,
         CodeProject\Providers\RouteServiceProvider::class,
+        CodeProject\Providers\CodeProjectRepositoryProvider::class,
 
     ],
 
