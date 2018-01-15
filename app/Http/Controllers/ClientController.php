@@ -5,6 +5,7 @@ namespace CodeProject\Http\Controllers;
 use CodeProject\Repositories\ClientRepository;
 use CodeProject\Services\ClientService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -94,6 +95,11 @@ class ClientController extends Controller
             return [
                 'error' => true,
                 'message' => 'Cliente não encontrado'
+            ];
+        } catch (QueryException $e) {
+            return [
+                'error' => true,
+                'message' => 'Cliente não pode ser excluído pois existe um ou mais projetos vinculados a ele'
             ];
         }
     }
