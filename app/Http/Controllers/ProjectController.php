@@ -66,7 +66,15 @@ class ProjectController extends Controller
      */
     public function update(Request $request, $id)
     {
-        return $this->service->update($request->all(), $id);
+        try {
+            return $this->service->update($request->all(), $id);
+        } catch (ModelNotFoundException $e) {
+            return [
+                'error' => true,
+                'message' => 'Projeto não encontrado'
+            ];
+        }
+        
     }
 
     /**
