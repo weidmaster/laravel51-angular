@@ -4,6 +4,7 @@ namespace CodeProject\Http\Controllers;
 
 use CodeProject\Repositories\ProjectRepository;
 use CodeProject\Services\ProjectService;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -45,7 +46,15 @@ class ProjectController extends Controller
      */
     public function show($id)
     {
-        return $this->repository->with(['owner','client'])->find($id);
+        try {
+            return $this->repository->with(['owner','client'])->find($id);
+        } catch (ModelNotFoundException $e) {
+            return [
+                'error' => true,
+                'message' => 'Projeto não encontrado'
+            ];
+        }
+        
     }
 
     /**
