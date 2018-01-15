@@ -85,6 +85,19 @@ class ProjectController extends Controller
      */
     public function destroy($id)
     {
-        $this->repository->delete($id);
+        try {
+            $this->repository->delete($id);
+            return [
+                'success' => true,
+                'message' => 'Projeto excluído'
+            ];
+        } catch (ModelNotFoundException $e) {
+            return [
+                'error' => true,
+                'message' => 'Projeto não encontrado'
+            ];
+        }
+        
+        
     }
 }
