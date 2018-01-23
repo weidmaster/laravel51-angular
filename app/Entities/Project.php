@@ -27,5 +27,9 @@ class Project extends Model implements Transformable
     public function client() {
         return $this->belongsTo(Client::class);
     }
+    
+    public function notes() {
+        return $this->hasMany(ProjectNote::class);
+    }
 
 }
