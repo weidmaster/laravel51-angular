@@ -8,22 +8,22 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class ProjectNoteController extends Controller
-{
+class ProjectNoteController extends Controller {
+
     private $repository;
     private $service;
-    
+
     public function __construct(ProjectNoteRepository $repository, ProjectNoteService $service) {
         $this->repository = $repository;
         $this->service = $service;
     }
+
     /**
      * Display a listing of the resource.
      *
      * @return Response
      */
-    public function index($id)
-    {
+    public function index($id) {
         return $this->repository->findWhere(['project_id' => $id]);
     }
 
@@ -33,8 +33,7 @@ class ProjectNoteController extends Controller
      * @param  Request  $request
      * @return Response
      */
-    public function store(Request $request)
-    {
+    public function store(Request $request) {
         return $this->service->create($request->all());
     }
 
@@ -44,17 +43,18 @@ class ProjectNoteController extends Controller
      * @param  int  $id
      * @return Response
      */
-    public function show($id, $noteId)
-    {
-        try {
-            return $this->repository->findWhere(['project_id' => $id, 'id' => $noteId]);
-        } catch (ModelNotFoundException $e) {
+    public function show($id, $noteId) {
+
+        $result = $this->repository->findWhere(['project_id' => $id, 'id' => $noteId]);
+
+        if ($result->count() == 0) {
             return [
                 'error' => true,
                 'message' => 'Nota não encontrada'
             ];
         }
         
+        return $result;
     }
 
     /**
@@ -64,8 +64,7 @@ class ProjectNoteController extends Controller
      * @param  int  $id
      * @return Response
      */
-    public function update(Request $request, $id, $noteId)
-    {
+    public function update(Request $request, $id, $noteId) {
         try {
             return $this->service->update($request->all(), $noteId);
         } catch (ModelNotFoundException $e) {
@@ -74,7 +73,6 @@ class ProjectNoteController extends Controller
                 'message' => 'Nota não encontrada'
             ];
         }
-        
     }
 
     /**
@@ -83,8 +81,7 @@ class ProjectNoteController extends Controller
      * @param  int  $id
      * @return Response
      */
-    public function destroy($id, $noteId)
-    {
+    public function destroy($id, $noteId) {
         try {
             $this->repository->delete($noteId);
             return [
@@ -97,7 +94,6 @@ class ProjectNoteController extends Controller
                 'message' => 'Nota não encontrada'
             ];
         }
-        
-        
     }
+
 }
