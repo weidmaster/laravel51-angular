@@ -6,25 +6,26 @@ use CodeProject\Repositories\ProjectRepository;
 use CodeProject\Services\ProjectService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
+use LucaDegasperi\OAuth2Server\Facades\Authorizer;
 use Symfony\Component\HttpFoundation\Response;
 
-class ProjectController extends Controller
-{
+class ProjectController extends Controller {
+
     private $repository;
     private $service;
-    
+
     public function __construct(ProjectRepository $repository, ProjectService $service) {
         $this->repository = $repository;
         $this->service = $service;
     }
+
     /**
      * Display a listing of the resource.
      *
      * @return Response
      */
-    public function index()
-    {
-        return $this->repository->with(['owner','client'])->all();
+    public function index() {
+        return $this->repository->with(['owner', 'client'])->findWhere(['owner_id' => Authorizer::getResourceOwnerId()]);
     }
 
     /**
@@ -33,8 +34,7 @@ class ProjectController extends Controller
      * @param  Request  $request
      * @return Response
      */
-    public function store(Request $request)
-    {
+    public function store(Request $request) {
         return $this->service->create($request->all());
     }
 
@@ -44,17 +44,21 @@ class ProjectController extends Controller
      * @param  int  $id
      * @return Response
      */
-    public function show($id)
-    {
+    public function show($id) {
+
+        if ($this->checkProjectOwner($id) == false) {
+            return [
+                'error' => 'Access forbidden'
+            ];
+        }
         try {
-            return $this->repository->with(['owner','client'])->find($id);
+            return $this->repository->with(['owner', 'client'])->find($id);
         } catch (ModelNotFoundException $e) {
             return [
                 'error' => true,
                 'message' => 'Projeto não encontrado'
             ];
         }
-        
     }
 
     /**
@@ -64,8 +68,12 @@ class ProjectController extends Controller
      * @param  int  $id
      * @return Response
      */
-    public function update(Request $request, $id)
-    {
+    public function update(Request $request, $id) {
+        if ($this->checkProjectOwner($id) == false) {
+            return [
+                'error' => 'Access forbidden'
+            ];
+        }
         try {
             return $this->service->update($request->all(), $id);
         } catch (ModelNotFoundException $e) {
@@ -74,7 +82,6 @@ class ProjectController extends Controller
                 'message' => 'Projeto não encontrado'
             ];
         }
-        
     }
 
     /**
@@ -83,8 +90,7 @@ class ProjectController extends Controller
      * @param  int  $id
      * @return Response
      */
-    public function destroy($id)
-    {
+    public function destroy($id) {
         try {
             $this->repository->delete($id);
             return [
@@ -97,7 +103,13 @@ class ProjectController extends Controller
                 'message' => 'Projeto não encontrado'
             ];
         }
-        
-        
     }
+
+    private function checkProjectOwner($projectId) {
+
+        $userId = Authorizer::getResourceOwnerId();
+
+        return $this->repository->isOwner($projectId, $userId);
+    }
+
 }
