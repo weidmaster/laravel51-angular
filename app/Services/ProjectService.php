@@ -40,5 +40,19 @@ class ProjectService {
             ];
         }
     }
-    
+
+    public function addMember($id, $memberId)
+    {
+        $this->repository->addMember($id, $memberId);
+    }
+
+    public function removeMember($id, $memberId)
+    {
+        $this->repository->removeMember($id, $memberId);
+    }
+
+    public function isMember($id, $memberId)
+    {
+        return $this->repository->isMember($id, $memberId);
+    }
 }
