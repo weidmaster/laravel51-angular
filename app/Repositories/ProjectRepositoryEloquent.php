@@ -2,6 +2,7 @@
 
 namespace CodeProject\Repositories;
 
+use CodeProject\Presenters\ProjectPresenter;
 use Prettus\Repository\Eloquent\BaseRepository;
 
 use CodeProject\Repositories\ProjectRepository;
@@ -47,5 +48,10 @@ class ProjectRepositoryEloquent extends BaseRepository implements ProjectReposit
         }
 
         return false;
+    }
+
+    public function presenter()
+    {
+        return ProjectPresenter::class;
     }
 }

@@ -24,6 +24,6 @@ class ProjectMemberController extends Controller
      */
     public function index($id)
     {
-        return $this->repository->find($id)->members;
+        return $this->repository->skipPresenter()->find($id)->members;
     }
 }
