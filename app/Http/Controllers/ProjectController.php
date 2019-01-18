@@ -6,6 +6,7 @@ use CodeProject\Repositories\ProjectRepository;
 use CodeProject\Services\ProjectService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
+use LucaDegasperi\OAuth2Server\Facades\Authorizer;
 use Symfony\Component\HttpFoundation\Response;
 
 class ProjectController extends Controller
@@ -24,7 +25,7 @@ class ProjectController extends Controller
      */
     public function index()
     {
-        return $this->repository->with(['owner','client'])->all();
+        return $this->repository->with(['owner','client'])->findWhere(['owner_id' => Authorizer::getResourceOwnerId()]);
     }
 
     /**
@@ -46,7 +47,11 @@ class ProjectController extends Controller
      */
     public function show($id)
     {
+
         try {
+            if ($this->checkProjectOwner($id) == false) {
+                return ['error' => 'Access Forbidden'];
+            }
             return $this->repository->with(['owner','client'])->find($id);
         } catch (ModelNotFoundException $e) {
             return [
@@ -66,7 +71,11 @@ class ProjectController extends Controller
      */
     public function update(Request $request, $id)
     {
+
         try {
+            if ($this->checkProjectOwner($id) == false) {
+                return ['error' => 'Access Forbidden'];
+            }
             return $this->service->update($request->all(), $id);
         } catch (ModelNotFoundException $e) {
             return [
@@ -85,7 +94,11 @@ class ProjectController extends Controller
      */
     public function destroy($id)
     {
+
         try {
+            if ($this->checkProjectOwner($id) == false) {
+                return ['error' => 'Access Forbidden'];
+            }
             $this->repository->delete($id);
             return [
                 'success' => true,
@@ -99,5 +112,12 @@ class ProjectController extends Controller
         }
         
         
+    }
+
+    private function checkProjectOwner($projectId)
+    {
+        $userId = Authorizer::getResourceOwnerId();
+
+         return $this->repository->isOwner($projectId, $userId);
     }
 }

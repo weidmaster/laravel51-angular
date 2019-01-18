@@ -50,6 +50,14 @@ class ProjectRepositoryEloquent extends BaseRepository implements ProjectReposit
         return false;
     }
 
+    public function isOwner($projectId, $userId)
+    {
+        if(count($this->findWhere(['id' => $projectId, 'owner_id' => $userId]))) {
+            return true;
+        }
+        return false;
+    }
+
     public function presenter()
     {
         return ProjectPresenter::class;
