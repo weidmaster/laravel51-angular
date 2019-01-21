@@ -26,4 +26,9 @@ class ProjectMemberController extends Controller
     {
         return $this->repository->skipPresenter()->find($id)->members;
     }
+
+    public function store($id, $memberId)
+    {
+        return $this->service->addMember($id, $memberId);
+    }
 }

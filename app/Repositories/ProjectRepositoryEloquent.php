@@ -27,8 +27,8 @@ class ProjectRepositoryEloquent extends BaseRepository implements ProjectReposit
 
     public function addMember($projectId, $memberId)
     {
-        $project = $this->find($projectId);
-        $project->members()->attach($memberId);
+        $project = $this->skipPresenter()->find($projectId);
+        $project->members()->create(['project_id' => $projectId, 'user_id' => $memberId]);
     }
 
     public function removeMember($projectId, $memberId)

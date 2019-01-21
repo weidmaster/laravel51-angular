@@ -61,6 +61,10 @@ class ProjectService
     public function addMember($id, $memberId)
     {
         $this->repository->addMember($id, $memberId);
+        return [
+            'success' => true,
+            'message' => 'Membro adicionado ao projeto'
+        ];
     }
 
     public function removeMember($id, $memberId)
