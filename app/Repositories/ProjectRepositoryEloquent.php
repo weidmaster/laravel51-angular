@@ -2,6 +2,8 @@
 
 namespace CodeProject\Repositories;
 
+use CodeProject\Entities\ProjectMembers;
+use CodeProject\Entities\User;
 use CodeProject\Presenters\ProjectPresenter;
 use Prettus\Repository\Eloquent\BaseRepository;
 
@@ -27,8 +29,25 @@ class ProjectRepositoryEloquent extends BaseRepository implements ProjectReposit
 
     public function addMember($projectId, $memberId)
     {
-        $project = $this->skipPresenter()->find($projectId);
-        $project->members()->create(['project_id' => $projectId, 'user_id' => $memberId]);
+        $project = $this->find($projectId);
+        $user = User::find($memberId);
+        if (!$project) {
+            return [
+                'error' => true,
+                'message' => 'Projeto não encontrado'
+            ];
+        }
+        if (!$user) {
+            return [
+                'error' => true,
+                'message' => 'Usuário não encontrado'
+            ];
+        }
+        ProjectMembers::create(['project_id' => $projectId, 'user_id' => $memberId]);
+        return [
+            'success' => true,
+            'message' => 'Membro adicionado ao projeto'
+        ];
     }
 
     public function removeMember($projectId, $memberId)
