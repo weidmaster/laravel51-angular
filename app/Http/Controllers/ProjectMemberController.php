@@ -31,4 +31,9 @@ class ProjectMemberController extends Controller
     {
         return $this->service->addMember($id, $memberId);
     }
+
+    public function destroy($id, $memberId)
+    {
+        return $this->service->removeMember($id, $memberId);
+    }
 }

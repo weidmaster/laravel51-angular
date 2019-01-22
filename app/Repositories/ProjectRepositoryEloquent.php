@@ -53,7 +53,26 @@ class ProjectRepositoryEloquent extends BaseRepository implements ProjectReposit
     public function removeMember($projectId, $memberId)
     {
         $project = $this->find($projectId);
-        $project->members()->detach($memberId);
+
+        if (!$project) {
+            return [
+                'error' => true,
+                'message' => 'Projeto não encontrado'
+            ];
+        }
+
+        $member = ProjectMembers::where(['project_id' => $projectId, 'user_id' => $memberId])->first();
+        if (!$member) {
+            return [
+                'error' => true,
+                'message' => 'Membro não encontrado'
+            ];
+        }
+        $member->delete();
+        return [
+            'success' => true,
+            'message' => 'Membro removido do projeto'
+        ];
     }
 
     public function isMember($projectId, $memberId)

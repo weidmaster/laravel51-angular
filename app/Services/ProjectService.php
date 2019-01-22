@@ -65,7 +65,7 @@ class ProjectService
 
     public function removeMember($id, $memberId)
     {
-        $this->repository->removeMember($id, $memberId);
+        return $this->repository->removeMember($id, $memberId);
     }
 
     public function isMember($id, $memberId)
