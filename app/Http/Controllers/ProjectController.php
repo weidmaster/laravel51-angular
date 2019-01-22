@@ -49,7 +49,7 @@ class ProjectController extends Controller
     {
 
         try {
-            if ($this->checkProjectOwner($id) == false) {
+            if ($this->checkProjectPermissions($id) == false) {
                 return ['error' => 'Access Forbidden'];
             }
             return $this->repository->with(['owner','client'])->find($id);
@@ -73,7 +73,7 @@ class ProjectController extends Controller
     {
 
         try {
-            if ($this->checkProjectOwner($id) == false) {
+            if ($this->checkProjectPermissions($id) == false) {
                 return ['error' => 'Access Forbidden'];
             }
             return $this->service->update($request->all(), $id);
@@ -119,5 +119,21 @@ class ProjectController extends Controller
         $userId = Authorizer::getResourceOwnerId();
 
          return $this->repository->isOwner($projectId, $userId);
+    }
+
+    private function checkProjectMember($projectId)
+    {
+        $userId = Authorizer::getResourceOwnerId();
+
+        return $this->repository->isMember($projectId, $userId);
+    }
+
+    private function checkProjectPermissions($projectId)
+    {
+        if ($this->checkProjectOwner($projectId) or $this->checkProjectMember($projectId)){
+            return true;
+        }
+
+        return false;
     }
 }
