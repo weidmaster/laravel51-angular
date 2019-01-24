@@ -11,6 +11,7 @@ use League\Flysystem\Exception;
 use Prettus\Validator\Exceptions\ValidatorException;
 use Symfony\Component\Debug\Exception\FatalThrowableError;
 use Symfony\Component\HttpFoundation\Response;
+use LucaDegasperi\OAuth2Server\Facades\Authorizer;
 
 class ProjectFileController extends Controller
 {
@@ -30,9 +31,12 @@ class ProjectFileController extends Controller
      * @param  Request  $request
      * @return Response
      */
-    public function store(Request $request)
+    public function store($projectId, Request $request)
     {
         try {
+            if ($this->checkProjectPermissions($projectId) == false) {
+                return ['error' => 'Access Forbidden'];
+            }
             $this->fileValidator->with($request->all())->passesOrFail();
 
             if($request->hasFile('file')) {
@@ -66,9 +70,35 @@ class ProjectFileController extends Controller
 
     public function destroy($projectId, $fileId)
     {
+        if ($this->checkProjectPermissions($projectId) == false) {
+            return ['error' => 'Access Forbidden'];
+        }
         $data['project_id'] = $projectId;
         $data['file_id'] = $fileId;
 
         return $this->service->deleteFile($data);
+    }
+
+    private function checkProjectOwner($projectId)
+    {
+        $userId = Authorizer::getResourceOwnerId();
+
+        return $this->repository->isOwner($projectId, $userId);
+    }
+
+    private function checkProjectMember($projectId)
+    {
+        $userId = Authorizer::getResourceOwnerId();
+
+        return $this->repository->isMember($projectId, $userId);
+    }
+
+    private function checkProjectPermissions($projectId)
+    {
+        if ($this->checkProjectOwner($projectId) or $this->checkProjectMember($projectId)){
+            return true;
+        }
+
+        return false;
     }
 }

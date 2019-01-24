@@ -9,15 +9,21 @@ use CodeProject\Services\ProjectTaskService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use LucaDegasperi\OAuth2Server\Facades\Authorizer;
 
 class ProjectTaskController extends Controller
 {
     private $repository;
     private $service;
-    
-    public function __construct(ProjectTaskRepository $repository, ProjectTaskService $service) {
+    /**
+     * @var ProjectRepository
+     */
+    private $projectRepository;
+
+    public function __construct(ProjectTaskRepository $repository, ProjectTaskService $service, ProjectRepository $projectRepository) {
         $this->repository = $repository;
         $this->service = $service;
+        $this->projectRepository = $projectRepository;
     }
     /**
      * Display a listing of the resource.
@@ -26,6 +32,9 @@ class ProjectTaskController extends Controller
      */
     public function index($id)
     {
+        if ($this->checkProjectPermissions($id) == false) {
+            return ['error' => 'Access Forbidden'];
+        }
         return $this->repository->findWhere(['project_id' => $id]);
     }
 
@@ -35,8 +44,11 @@ class ProjectTaskController extends Controller
      * @param  Request  $request
      * @return Response
      */
-    public function store(Request $request)
+    public function store($id, Request $request)
     {
+        if ($this->checkProjectPermissions($id) == false) {
+            return ['error' => 'Access Forbidden'];
+        }
         return $this->service->create($request->all());
     }
 
@@ -49,6 +61,9 @@ class ProjectTaskController extends Controller
     public function show($id, $idTask)
     {
         try {
+            if ($this->checkProjectPermissions($id) == false) {
+                return ['error' => 'Access Forbidden'];
+            }
             return $this->repository->find($idTask);
         } catch (ModelNotFoundException $e) {
             return [
@@ -69,6 +84,9 @@ class ProjectTaskController extends Controller
     public function update(Request $request, $id, $idTask)
     {
         try {
+            if ($this->checkProjectPermissions($id) == false) {
+                return ['error' => 'Access Forbidden'];
+            }
             return $this->service->update($request->all(), $idTask);
         } catch (ModelNotFoundException $e) {
             return [
@@ -88,6 +106,9 @@ class ProjectTaskController extends Controller
     public function destroy($id, $idTask)
     {
         try {
+            if ($this->checkProjectPermissions($id) == false) {
+                return ['error' => 'Access Forbidden'];
+            }
             $this->repository->delete($idTask);
             return [
                 'success' => true,
@@ -101,5 +122,28 @@ class ProjectTaskController extends Controller
         }
         
         
+    }
+
+    private function checkProjectOwner($projectId)
+    {
+        $userId = Authorizer::getResourceOwnerId();
+
+        return $this->projectRepository->isOwner($projectId, $userId);
+    }
+
+    private function checkProjectMember($projectId)
+    {
+        $userId = Authorizer::getResourceOwnerId();
+
+        return $this->projectRepository->isMember($projectId, $userId);
+    }
+
+    private function checkProjectPermissions($projectId)
+    {
+        if ($this->checkProjectOwner($projectId) or $this->checkProjectMember($projectId)){
+            return true;
+        }
+
+        return false;
     }
 }
